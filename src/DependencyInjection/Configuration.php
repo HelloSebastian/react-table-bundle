@@ -20,6 +20,7 @@ class Configuration implements ConfigurationInterface
         $rootNode
             ->children()
                 ->arrayNode('default_table_props')
+                    ->addDefaultsIfNotSet()
                     ->children()
                         ->booleanNode('showPagination')->defaultTrue()->end()
                         ->booleanNode('showPaginationTop')->defaultFalse()->end()
