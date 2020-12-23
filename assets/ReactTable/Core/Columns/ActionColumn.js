@@ -5,8 +5,6 @@ const column = (config) => {
     const {buttons} = config;
     delete config.buttons;
 
-    console.log("buttons", buttons);
-
     return {
         ...config,
         filterable: false,

@@ -24,11 +24,17 @@ class ReactTableFactory
      */
     private $defaultTableProps;
 
-    public function __construct(RouterInterface $router, EntityManagerInterface $em, $defaultTableProps = array())
+    /**
+     * @var array
+     */
+    private $defaultPersistenceOptions;
+
+    public function __construct(RouterInterface $router, EntityManagerInterface $em, $defaultTableProps = array(), $defaultPersistenceOptions = array())
     {
         $this->router = $router;
         $this->em = $em;
         $this->defaultTableProps = $defaultTableProps;
+        $this->defaultPersistenceOptions = $defaultPersistenceOptions;
     }
 
     /**
@@ -51,7 +57,8 @@ class ReactTableFactory
         return new $reactTableClass(
             $this->router,
             $this->em,
-            $this->defaultTableProps
+            $this->defaultTableProps,
+            $this->defaultPersistenceOptions
         );
     }
 }

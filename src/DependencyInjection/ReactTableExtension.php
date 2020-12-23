@@ -24,5 +24,6 @@ class ReactTableExtension extends Extension
 
         $definition = $container->getDefinition('hello_sebastian_react_table.react_table_factory');
         $definition->setArgument(2, $config['default_table_props']);
+        $definition->setArgument(3, $config['default_persistence_options']);
     }
 }

@@ -51,7 +51,18 @@ class Configuration implements ConfigurationInterface
                         ->scalarNode('pageJumpText')->defaultValue('jump to page')->end()
                         ->scalarNode('rowsSelectorText')->defaultValue('rows per page')->end()
                 ->end()
+            ->end()
+            ->arrayNode('default_persistence_options')
+                ->addDefaultsIfNotSet()
+                ->children()
+                    ->booleanNode('resized')->defaultTrue()->end()
+                    ->booleanNode('filtered')->defaultTrue()->end()
+                    ->booleanNode('sorted')->defaultTrue()->end()
+                    ->booleanNode('page')->defaultTrue()->end()
+                    ->booleanNode('page_size')->defaultTrue()->end()
+                ->end()
             ->end();
+
 
         return $treeBuilder;
     }

@@ -18,8 +18,6 @@ const column = (config) => {
                 );
             break;
         case "select":
-            console.log("filter", filterOption);
-
             Filter = ({filter, onChange}) => (
                 <select
                     value={filter ? filter.value : ''}

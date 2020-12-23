@@ -47,14 +47,20 @@ abstract class ReactTable
     /**
      * @var array
      */
+    protected $persistenceOptions;
+
+    /**
+     * @var array
+     */
     protected $requestData;
 
 
-    public function __construct(RouterInterface $router, EntityManagerInterface $em, $defaultTableProps)
+    public function __construct(RouterInterface $router, EntityManagerInterface $em, $defaultTableProps, $defaultPersistenceOptions)
     {
         $this->router = $router;
         $this->em = $em;
         $this->tableProps = $defaultTableProps;
+        $this->persistenceOptions = $defaultPersistenceOptions;
 
         $this->columnBuilder = new ColumnBuilder($router);
         $this->dataBuilder = new DataBuilder($this->columnBuilder);
@@ -104,23 +110,26 @@ abstract class ReactTable
      */
     public function createView()
     {
+        //build columns structure without data
         $this->buildColumns($this->columnBuilder);
 
-        $resolver = new OptionsResolver();
-        $this->configureTableProps($resolver);
+        //set up table props resolver
+        $tablePropsResolver = new OptionsResolver();
+        $this->configureTableProps($tablePropsResolver);
+
+        //set up persistence options resolver
+        $persistenceOptionsResolver = new OptionsResolver();
+        $this->configurePersistenceOptions($persistenceOptionsResolver);
 
         return json_encode(array(
-            'url' => $this->requestData['route'],
+            'url' => $this->requestData['route'], //url for callbacks
             'columns' => $this->columnBuilder->buildColumnsArray(),
-            'tableProps' => $resolver->resolve($this->tableProps)
+            'tableName' => $this->getTableName(),
+            'tableProps' => $tablePropsResolver->resolve($this->tableProps),
+            'persistenceOptions' => $persistenceOptionsResolver->resolve($this->persistenceOptions)
         ));
     }
 
-    /**
-     * Builds columns of table, handles query for data and builds data array.
-     *
-     * @return array
-     */
     private function buildTable()
     {
         $this->buildColumns($this->columnBuilder);
@@ -164,6 +173,23 @@ abstract class ReactTable
         ));
     }
 
+    public function configurePersistenceOptions(OptionsResolver $resolver)
+    {
+        $resolver->setDefaults(array(
+            'resized' => true,
+            'filtered' => true,
+            'sorted' => true,
+            'page' => true,
+            'page_size' => true
+        ));
+
+        $resolver->setAllowedTypes('resized', 'boolean');
+        $resolver->setAllowedTypes('filtered', 'boolean');
+        $resolver->setAllowedTypes('sorted', 'boolean');
+        $resolver->setAllowedTypes('page', 'boolean');
+        $resolver->setAllowedTypes('page_size', 'boolean');
+    }
+
     public function getColumnBuilder()
     {
         return $this->columnBuilder;
@@ -177,6 +203,20 @@ abstract class ReactTable
     public function setTableProps($tableProps)
     {
         $this->tableProps = array_merge($this->tableProps, $tableProps);
+    }
+
+    public function setPersistenceOptions($persistenceOptions)
+    {
+        $this->persistenceOptions = array_merge($this->persistenceOptions, $persistenceOptions);
+    }
+
+    public function getTableName()
+    {
+        $className = get_class($this);
+        $className = strtolower($className);
+        $className = str_replace("\\", "_", $className);
+
+        return $className;
     }
 
     /**

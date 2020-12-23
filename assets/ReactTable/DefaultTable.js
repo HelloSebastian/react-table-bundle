@@ -11,9 +11,7 @@ export default class DefaultTable extends Component {
     render() {
         return (
             <ReactTableBundle
-                columns={this.props.table.columns}
-                callbackUrl={this.props.table.url}
-                tableProps={this.props.table.tableProps}
+                {...this.props.table}
             />
         );
     }
