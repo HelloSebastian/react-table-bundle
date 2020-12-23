@@ -45,10 +45,11 @@ a few more simple steps.
 
 ### Step 2: Enable the Bundle (without flex)
 
-Then, enable the bundle by adding it to the list of registered bundles in the `app/AppKernel.php` file of your project:
+Then, enable the bundle by adding it to the list of registered bundles in the `config/bundles.php` file of your project:
 
 ``` php
-# config/bundles.php
+// config/bundles.php
+
 return [
     // ...
     HelloSebastian\ReactTableBundle\ReactTableBundle::class => ['all' => true],
@@ -72,7 +73,7 @@ $ php bin/console assets:install --symlink
 $ php bin/console assets:install
 ```
 
-### Step 4: Add Assets into your base.html.twig
+#### Add Assets into your base.html.twig
 
 ``` html
 <link rel="stylesheet" href="{{ asset('bundles/reacttable/app.css') }}">
@@ -169,7 +170,7 @@ class UserTable extends ReactTable
 ```
 
 
-### Step 3: In the Controller
+### Step 2: In the Controller
 
 ``` php
 // src/Controller/UserController.php
@@ -196,7 +197,7 @@ public function index(Request $request, ReactTableFactory $reactTableFactory) : 
 }
 ```
 
-### Step 4: Create your index.html.twig
+### Step 3: Create your index.html.twig
 
 ``` html
 {% extends 'base.html.twig' %}
