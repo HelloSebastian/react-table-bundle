@@ -1,0 +1,20 @@
+{
+  "devDependencies": {
+    "@babel/preset-react": "^7.0.0",
+    "@fortawesome/fontawesome-free": "^5.8.1",
+    "@symfony/webpack-encore": "^0.27",
+    "prop-types": "^15.7.2",
+    "react": "^17.0.1",
+    "react-dom": "^17.0.1",
+    "react-table-6": "^6.11.0",
+    "react-table": "^7.6.2"
+  },
+  "license": "UNLICENSED",
+  "private": true,
+  "scripts": {
+    "dev-server": "encore dev-server",
+    "dev": "encore dev",
+    "watch": "encore dev --watch",
+    "build": "encore production"
+  }
+}

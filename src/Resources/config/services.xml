@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<container xmlns="http://symfony.com/schema/dic/services"
+           xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+           xsi:schemaLocation="http://symfony.com/schema/dic/services
+        http://symfony.com/schema/dic/services/services-1.0.xsd">
+    <services>
+        <service id="hello_sebastian_react_table.react_table_factory" class="HelloSebastian\ReactTableBundle\ReactTableFactory" public="true">
+            <argument type="service" id="router" on-invalid="null" />
+            <argument type="service" id="doctrine.orm.entity_manager" on-invalid="null" />
+        </service>
+        <service id="HelloSebastian\ReactTableBundle\ReactTableFactory" alias="hello_sebastian_react_table.react_table_factory" />
+
+        <service class="HelloSebastian\ReactTableBundle\Columns\ColumnBuilder" id="hello_sebastian_react_table.columns.column_builder" public="false" />
+    </services>
+</container>
