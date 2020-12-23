@@ -62,8 +62,6 @@ export default class ReactTableBundle extends Component {
         let page = this.handleCookies("page", tableName, persistenceOptions);
         let pageSize = this.handleCookies("page_size", tableName, persistenceOptions);
 
-        console.log("sorted", sorted);
-
         this.setState({
             columns: this.buildColumns(this.props.columns),
             init: true,
@@ -91,18 +89,11 @@ export default class ReactTableBundle extends Component {
     saveStateToCookie(state, key) {
         const {persistenceOptions, tableName} = this.props;
 
-        console.log("persistenceOptions", persistenceOptions);
-        console.log("key", key);
-
         if (persistenceOptions[key]) {
-            console.log("save aktiviert!", key);
-
             clearTimeout(this.timeoutSaveCookies);
             this.timeoutSaveCookies = setTimeout(() => {
                 const cookies = new Cookies();
                 const COOKIE_KEY = KEY(key, tableName);
-                console.log("COOKIE_KEY", COOKIE_KEY);
-                console.log("state", state);
                 cookies.set(COOKIE_KEY, JSON.stringify(state), {path: '/'});
             }, 800);
         }
@@ -128,8 +119,6 @@ export default class ReactTableBundle extends Component {
                 isCallback: true
             })
         }).then(data => {
-            console.log("data", data);
-
             this.setState({
                 data: data.data,
                 loading: false,
