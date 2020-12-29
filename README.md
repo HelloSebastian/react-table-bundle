@@ -13,8 +13,10 @@ API for the columns is very similar.)
 ## Overview
 
 1. [Features](#features)
-1. [Installation](#installation)
-2. [Your First Table](#your-first-table)
+2. [Installation](#installation)
+3. [Your First Table](#your-first-table)
+4. [Table Props Configuration](#table-props)
+5. [Persistence Options Configuration](#persistence-options)
 
 
 ## Features
@@ -22,12 +24,14 @@ API for the columns is very similar.)
 * Filtering*
 * Sorting*
 * Pagination*
-* Persist table state
+* Persist table state (sorting, filtering, current page, ...)
 * Column Types: TextColumn, BooleanColumn, DateTimeColumn, ActionColumn
 * Helper for action buttons
-* All features from react-table
+* *all features from react-table***
 
 *server-side
+
+**not yet implemented
 
 ## Installation
 
@@ -205,6 +209,165 @@ public function index(Request $request, ReactTableFactory $reactTableFactory) : 
 {% block body %}
     <div class="react-table-bundle" data-table="{{ table }}"></div>
 {% endblock %}
+```
+
+## Configuration
+
+
+### Table Props
+
+Table Props are provided directly to ReactTable and are a collection of setting options for the table.
+
+#### Options
+
+| Option                        | Type    | Default                  | 
+|-------------------------------|---------|--------------------------|
+| showPagination                | bool    | true                     |
+| showPaginationTop             | bool    | false                    |
+| showPaginationBottom          | bool    | true                     | 
+| showPageSizeOptions           | bool    | true                     | 
+| pageSizeOptions               | array   | [5, 10, 20, 25, 50, 100] |
+| defaultPageSize               | int     | 20                       | 
+| showPageJump                  | bool    | true                     | 
+| collapseOnSortingChange       | bool    | true                     | 
+| collapseOnPageChange          | bool    | true                     | 
+| collapseOnDataChange          | bool    | true                     | 
+| freezeWhenExpanded            | bool    | false                    | 
+| sortable                      | bool    | true                     | 
+| multiSort                     | bool    | true                     | 
+| resizable                     | bool    | true                     | 
+| filterable                    | bool    | true                     | 
+| defaultSortDesc               | bool    | false                    | 
+| className                     | string  | ''                       | 
+| previousText                  | string  | 'Previous'               |
+| nextText                      | string  | 'Next'                   | 
+| loadingText                   | string  | 'Loading...'             |
+| noDataText                    | string  | 'No rows found'          | 
+| pageText                      | string  | 'Page'                   | 
+| ofText                        | string  | 'of'                     | 
+| rowsText                      | string  | 'Rows'                   | 
+| pageJumpText                  | string  | 'jump to page'           |
+| rowsSelectorText              | string  | 'rows per page'          | 
+
+
+You can either perform settings for all tables via a YAML file or set each individual table
+
+#### YAML-Configuration
+
+```yaml
+// config/packages/react_table.yaml
+
+react_table:
+    default_table_props:
+        className: "-striped -highlight"
+        sortable: false
+```
+
+#### PHP-Configuration
+
+Inside from Table class:
+
+``` php
+// src/ReactTable/UserTable.php
+
+class TestTable extends ReactTable
+{
+    ...
+
+    public function configureTableProps(OptionsResolver $resolver)
+    {
+        parent::configureTableProps($resolver);
+    
+        $resolver->setDefaults(array(
+            'defaultPageSize' => 10
+        ));
+    }
+}
+```
+
+
+Outside from Table class:
+
+``` php
+// src/Controller/UserController.php
+
+public function index(Request $request, ReactTableFactory $reactTableFactory) : Response
+{
+    $table = $reactTableFactory->create(UserTable::class);
+
+    $table->setTableProps(array(
+        'defaultPageSize' => 10
+    ));
+
+    ...
+}
+```
+
+
+In the `configureTableProps` method, you can specify custom data that can be provided directly to the ReactTable.
+
+### Persistence Options
+
+#### Options
+
+With the Persistence Options you can set which settings (filtering, sorting, current page, ...) should be stored in the cookies. By default, all of them are activated.
+
+| Option         | Type    | Default  | 
+|----------------|---------|----------|
+| resized        | bool    | true     |
+| filtered       | bool    | true     |
+| sorted         | bool    | true     | 
+| page           | bool    | true     | 
+| page_size      | bool    | true     |
+
+#### YAML-Configuration
+
+```yaml
+// config/packages/react_table.yaml
+react_table:
+    default_persistence_options:
+        sorted: true
+```
+
+
+#### PHP-Configuration
+
+Inside from Table class:
+
+``` php
+// src/ReactTable/UserTable.php
+
+class TestTable extends ReactTable
+{
+    ...
+
+    public function configurePersistenceOptions(OptionsResolver $resolver)
+    {
+        parent::configurePersistenceOptions($resolver);
+
+        $resolver->setDefaults(array(
+            'sorted' => false
+        ));
+    }
+}
+```
+
+
+Outside from Table class:
+
+``` php
+// src/Controller/UserController.php
+
+public function index(Request $request, ReactTableFactory $reactTableFactory) : Response
+{
+    $table = $reactTableFactory->create(UserTable::class);
+
+    $table->setPersistenceOptions(array(
+        'page' => true
+    ));
+
+    ...
+}
 ```
 
 ## ToDo's

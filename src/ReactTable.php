@@ -219,11 +219,7 @@ abstract class ReactTable
         return $className;
     }
 
-    /**
-     * @param ColumnBuilder $columnBuilder
-     */
     protected abstract function buildColumns(ColumnBuilder $columnBuilder);
 
     protected abstract function getEntityClass(): string;
-
 }
