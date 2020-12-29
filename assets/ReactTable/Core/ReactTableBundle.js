@@ -5,9 +5,6 @@ import buildTextColumn from './Columns/TextColumn';
 import buildActionColumn from './Columns/ActionColumn';
 import Cookies from 'universal-cookie';
 
-const KEY = (key, tableName) => {
-    return 'table_' + tableName + '_' + key;
-};
 
 export default class ReactTableBundle extends Component {
 
@@ -30,46 +27,54 @@ export default class ReactTableBundle extends Component {
         this.buildColumns = this.buildColumns.bind(this);
         this.saveStateToCookie = this.saveStateToCookie.bind(this);
 
+        this.getPersistenceFromCookies = this.getPersistenceFromCookies.bind(this);
+
         console.log("Default Table", this.props);
     }
 
-    handleCookies(key, tableName, persistenceOptions) {
+    getPersistenceFromCookies() {
+        const {persistenceOptions, tableName} = this.props;
+
         const cookies = new Cookies();
-        let value = [];
-        if (key === "page" || key === "page_size") {
-            value = undefined;
-        }
 
-        const COOKIE_KEY = KEY(key, tableName);
+        let persistedState = {
+            sorted: [],
+            resized: [],
+            filtered: [],
+            page: undefined,
+            page_size: undefined
+        };
 
-        if (persistenceOptions[key]) {
-            if (cookies.get(COOKIE_KEY)) {
-                return cookies.get(COOKIE_KEY);
-            }
+        if (cookies.get("table_" + tableName)) {
+            const cookiesPersistenceState = cookies.get("table_" + tableName);
+
+            Object.keys(persistenceOptions).forEach(option => {
+                if (persistenceOptions[option]) {
+                    persistedState = {
+                        ...persistedState,
+                        [option]: cookiesPersistenceState[option]
+                    };
+                } else {
+                    //reset cookie
+                    cookiesPersistenceState[option] = persistedState[option];
+                }
+            });
+
+            //update cookies
+            cookies.set("table_" + tableName, JSON.stringify(cookiesPersistenceState), {path: '/'});
         } else {
-            cookies.remove(COOKIE_KEY);
+            //if key not found, init cookies
+            cookies.set("table_" + tableName, JSON.stringify(persistedState), {path: '/'});
         }
 
-        return value;
+        return persistedState;
     }
 
     componentDidMount() {
-        const {tableName, persistenceOptions} = this.props;
-
-        let sorted = this.handleCookies("sorted", tableName, persistenceOptions);
-        let resized = this.handleCookies("resized", tableName, persistenceOptions);
-        let filtered = this.handleCookies("filtered", tableName, persistenceOptions);
-        let page = this.handleCookies("page", tableName, persistenceOptions);
-        let pageSize = this.handleCookies("page_size", tableName, persistenceOptions);
-
         this.setState({
             columns: this.buildColumns(this.props.columns),
             init: true,
-            sorted: sorted,
-            resized: resized,
-            filtered: filtered,
-            page: page,
-            pageSize: pageSize
+            ...this.getPersistenceFromCookies()
         });
     }
 
@@ -93,8 +98,10 @@ export default class ReactTableBundle extends Component {
             clearTimeout(this.timeoutSaveCookies);
             this.timeoutSaveCookies = setTimeout(() => {
                 const cookies = new Cookies();
-                const COOKIE_KEY = KEY(key, tableName);
-                cookies.set(COOKIE_KEY, JSON.stringify(state), {path: '/'});
+                const persistedState = cookies.get("table_" + tableName);
+                persistedState[key] = state;
+                cookies.set("table_" + tableName, JSON.stringify(persistedState), {path: '/'});
+
             }, 800);
         }
 
