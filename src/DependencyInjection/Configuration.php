@@ -61,7 +61,20 @@ class Configuration implements ConfigurationInterface
                     ->booleanNode('page')->defaultTrue()->end()
                     ->booleanNode('page_size')->defaultTrue()->end()
                 ->end()
-            ->end();
+            ->end()
+            ->arrayNode('default_column_options')
+                ->addDefaultsIfNotSet()
+                ->children()
+                    ->arrayNode('action_column')
+                        ->addDefaultsIfNotSet()
+                        ->children()
+                            ->scalarNode('default_class_names')->defaultValue('')->end()
+                        ->end()
+                    ->end()
+                ->end()
+            ->end()
+
+        ;
 
 
         return $treeBuilder;

@@ -17,11 +17,10 @@ class ActionButton
         $this->options = $resolver->resolve($options);
     }
 
-    public static function create($routeName, $name, $additionalClassNames = "", $options = array())
+    public static function create($routeName, $name, $options = array())
     {
         $options['routeName'] = $routeName;
         $options['name'] = $name;
-        $options['additionalClassNames'] = $additionalClassNames;
 
         return new self($options);
     }
@@ -30,10 +29,9 @@ class ActionButton
     {
         $resolver->setDefaults(array(
             'name' => null,
-            'classNames' => 'btn btn-xs btn-default ',
-            'additionalClassNames' => '',
+            'classNames' => '',
             'routeName' => null,
-            'routeParam' => 'id'
+            'routeParams' => array('id')
         ));
 
         $resolver->setRequired('name');
@@ -42,15 +40,14 @@ class ActionButton
         $resolver->setAllowedTypes('name', 'string');
         $resolver->setAllowedTypes('routeName', 'string');
         $resolver->setAllowedTypes('classNames', 'string');
-        $resolver->setAllowedTypes('additionalClassNames', 'string');
-        $resolver->setAllowedTypes('routeParam', ['string', 'array']);
+        $resolver->setAllowedTypes('routeParams', 'array');
     }
 
     public function buildArray()
     {
         return array(
             'name' => $this->options['name'],
-            'classNames' => $this->options['classNames'] . $this->options['additionalClassNames']
+            'classNames' => $this->options['classNames']
         );
     }
 
@@ -64,9 +61,9 @@ class ActionButton
         return $this->options['routeName'];
     }
 
-    public function getRouteParam()
+    public function getRouteParams()
     {
-        return $this->options['routeParam'];
+        return $this->options['routeParams'];
     }
 
     public function getOptions()

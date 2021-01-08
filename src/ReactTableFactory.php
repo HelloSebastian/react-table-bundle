@@ -29,12 +29,19 @@ class ReactTableFactory
      */
     private $defaultPersistenceOptions;
 
-    public function __construct(RouterInterface $router, EntityManagerInterface $em, $defaultTableProps = array(), $defaultPersistenceOptions = array())
+    /**
+     * @var array
+     */
+    private $defaultColumnOptions;
+
+    public function __construct(RouterInterface $router, EntityManagerInterface $em, $defaultConfig = array())
     {
         $this->router = $router;
         $this->em = $em;
-        $this->defaultTableProps = $defaultTableProps;
-        $this->defaultPersistenceOptions = $defaultPersistenceOptions;
+
+        $this->defaultTableProps = $defaultConfig['default_table_props'];
+        $this->defaultPersistenceOptions = $defaultConfig['default_persistence_options'];
+        $this->defaultColumnOptions = $defaultConfig['default_column_options'];
     }
 
     /**
@@ -58,7 +65,8 @@ class ReactTableFactory
             $this->router,
             $this->em,
             $this->defaultTableProps,
-            $this->defaultPersistenceOptions
+            $this->defaultPersistenceOptions,
+            $this->defaultColumnOptions
         );
     }
 }

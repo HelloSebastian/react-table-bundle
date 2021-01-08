@@ -38,8 +38,8 @@ class BooleanColumn extends Column
 
     public function buildData($entity)
     {
-        if (!is_null($this->options['_dataCallback'])) {
-            return $this->options['_dataCallback']($entity);
+        if (!is_null($this->options['dataCallback'])) {
+            return $this->options['dataCallback']($entity);
         }
 
         if (!$this->propertyAccessor->isReadable($entity, $this->getFullPropertyPath())) {

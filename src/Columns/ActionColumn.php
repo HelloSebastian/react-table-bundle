@@ -4,10 +4,12 @@
 namespace HelloSebastian\ReactTableBundle\Columns;
 
 
+use HelloSebastian\ReactTableBundle\Data\ActionButton;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 
 class ActionColumn extends Column
 {
+
     public function __construct($accessor, $options)
     {
         parent::__construct($accessor ?? "actions", "action", $options);
@@ -47,12 +49,21 @@ class ActionColumn extends Column
     {
         $item = array();
 
+        /**
+         * @var int $key
+         * @var ActionButton $button
+         */
         foreach ($this->options['buttons'] as $key => $button) {
-            $item['route_' . $key] = $this->router->generate($button->getRouteName(), array(
-                $button->getRouteParam() => $this->propertyAccessor->getValue($entity, $button->getRouteParam())
-            ));
+
+            $routeParams = array();
+            foreach ($button->getRouteParams() as $param) {
+                $routeParams[$param] = $this->propertyAccessor->getValue($entity, $param);
+            }
+
+            $item['route_' . $key] = $this->router->generate($button->getRouteName(), $routeParams);
         }
 
         return $item;
     }
+
 }

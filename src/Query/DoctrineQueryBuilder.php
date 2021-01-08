@@ -59,7 +59,7 @@ class DoctrineQueryBuilder
         $joins = array();
 
         foreach ($this->columnBuilder->getColumns() as $column) {
-            if ($column->getOption('_isJoinField')) {
+            if ($column->isJoinField()) {
                 $currentPart = $this->qb->getRootAliases()[0];
                 $currentAlias = $currentPart;
                 $propertyPath = $column->getFullPropertyPath();

@@ -55,19 +55,23 @@ abstract class ReactTable
     protected $requestData;
 
 
-    public function __construct(RouterInterface $router, EntityManagerInterface $em, $defaultTableProps, $defaultPersistenceOptions)
+    public function __construct(RouterInterface $router, EntityManagerInterface $em, $defaultTableProps, $defaultPersistenceOptions, $defaultColumnOptions)
     {
         $this->router = $router;
         $this->em = $em;
         $this->tableProps = $defaultTableProps;
         $this->persistenceOptions = $defaultPersistenceOptions;
 
-        $this->columnBuilder = new ColumnBuilder($router);
+        $this->columnBuilder = new ColumnBuilder($router, $defaultColumnOptions);
         $this->dataBuilder = new DataBuilder($this->columnBuilder);
         $this->doctrineQueryBuilder = new DoctrineQueryBuilder($this->em, $this->getEntityClass(), $this->columnBuilder);
+
+        $this->buildColumns($this->columnBuilder);
     }
 
     /**
+     * Checks if request is a sub request (callback) from react table.
+     *
      * @return boolean
      * @throws \Exception
      */
@@ -76,6 +80,11 @@ abstract class ReactTable
         return $this->requestData['isCallback'];
     }
 
+    /**
+     * Handles request and gets request information.
+     *
+     * @param Request $request
+     */
     public function handleRequest(Request $request)
     {
         $requestDataResolver = new OptionsResolver();
@@ -98,21 +107,22 @@ abstract class ReactTable
     }
 
     /**
+     * Gets data depends on paging, filtering and sorting.
+     *
      * @return JsonResponse
      */
     public function getResponse()
     {
-        return JsonResponse::create($this->buildTable());
+        return new JsonResponse($this->buildTable());
     }
 
     /**
+     * Returns table structure as encoded array.
+     *
      * @return false|string
      */
     public function createView()
     {
-        //build columns structure without data
-        $this->buildColumns($this->columnBuilder);
-
         //set up table props resolver
         $tablePropsResolver = new OptionsResolver();
         $this->configureTableProps($tablePropsResolver);
@@ -132,7 +142,6 @@ abstract class ReactTable
 
     private function buildTable()
     {
-        $this->buildColumns($this->columnBuilder);
         $entities = $this->doctrineQueryBuilder->getSubsetData($this->requestData);
 
         return array(

@@ -18,9 +18,21 @@ class ColumnBuilder
      */
     private $router;
 
-    public function __construct(RouterInterface $router)
+    /**
+     * @var array
+     */
+    private $defaultColumnOptions;
+
+    /**
+     * ColumnBuilder constructor. Created in ReactTable.
+     *
+     * @param RouterInterface $router
+     * @param $defaultColumnOptions
+     */
+    public function __construct(RouterInterface $router, $defaultColumnOptions)
     {
         $this->router = $router;
+        $this->defaultColumnOptions = $defaultColumnOptions;
     }
 
     /**
@@ -43,16 +55,17 @@ class ColumnBuilder
     /**
      * Adds new column to table.
      *
-     * @param string $attribute
+     * @param string $accessor
      * @param string $columnClass
      * @param array $options
      * @param int|null $index
      * @return $this
      */
-    public function add($attribute, $columnClass, $options = array(), $index = null)
+    public function add($accessor, $columnClass, $options = array(), $index = null)
     {
         /** @var Column $column */
-        $column = new $columnClass($attribute, $options);
+        $column = new $columnClass($accessor, $options);
+        $column->setColumnBuilder($this);
         $column->setRouter($this->router);
 
         if (is_null($index)) {
@@ -65,13 +78,29 @@ class ColumnBuilder
     }
 
     /**
+     * Marks column by accessor to remove.
+     *
+     * @param string $accessor
+     */
+    public function remove($accessor)
+    {
+        foreach ($this->columns as $key => $column) {
+            if ($column->getAccessor() == $accessor) {
+                unset($this->columns[$key]);
+            }
+        }
+    }
+
+    /**
      * Loop over all columns and build array options for react table.
      *
      * @return array
      */
     public function buildColumnsArray()
     {
+        //sort by key
         ksort($this->columns);
+
         $data = array();
         foreach ($this->columns as $column) {
             $data[] = $column->buildColumnArray();
@@ -81,11 +110,15 @@ class ColumnBuilder
     }
 
     /**
+     * Gets all columns sorted by keys.
+     *
      * @return Column[]
      */
     public function getColumns()
     {
+        //sort by key
         ksort($this->columns);
+
         return $this->columns;
     }
 

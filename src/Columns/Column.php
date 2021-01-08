@@ -5,6 +5,7 @@ namespace HelloSebastian\ReactTableBundle\Columns;
 
 
 use HelloSebastian\ReactTableBundle\Filter\AbstractFilter;
+use HelloSebastian\ReactTableBundle\Filter\FilterFactory;
 use HelloSebastian\ReactTableBundle\Filter\TextFilter;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 use Symfony\Component\PropertyAccess\PropertyAccess;
@@ -19,6 +20,11 @@ abstract class Column
     protected $options;
 
     /**
+     * @var array
+     */
+    protected $outputOptions;
+
+    /**
      * @var RouterInterface
      */
     protected $router;
@@ -28,6 +34,11 @@ abstract class Column
      */
     protected $propertyAccessor;
 
+    /**
+     * @var ColumnBuilder
+     */
+    protected $columnBuilder;
+
     public function __construct($accessor, $type, $options)
     {
         $resolver = new OptionsResolver();
@@ -35,47 +46,13 @@ abstract class Column
 
         $this->propertyAccessor = PropertyAccess::createPropertyAccessor();
 
-        $options['_propertyPath'] = $accessor;
-        $options['_isJoinField'] = (false !== strpos($accessor,"."));
+        $options['propertyPath'] = $accessor;
+        $options['isJoinField'] = (false !== strpos($accessor,"."));
         $options['accessor'] = str_replace(".", "_", $accessor);
         $options['type'] = $type;
 
         $this->options = $resolver->resolve($options);
     }
-
-    /**
-     * @return array
-     */
-    public function buildColumnArray()
-    {
-        //return no internal fields
-        $data = array_filter($this->options, function ($key) {
-            return $key[0] != "_";
-        }, ARRAY_FILTER_USE_KEY);
-
-        //if no width is set, remove field
-        if (is_null($data['width'])) {
-            unset($data['width']);
-        }
-
-        if (!is_null($data['filter'])) {
-            /** @var AbstractFilter $filter */
-            $filter = new $data['filter'][0]($data['filter'][1]);
-
-            $data['filter'] = array(
-                'type' => $filter::TYPE,
-                'options' => $filter->buildArray()
-            );
-        }
-
-        return $data;
-    }
-
-    /**
-     * @param $entity
-     * @return array
-     */
-    public abstract function buildData($entity);
 
     /**
      * Sets in ColumnBuilder.
@@ -88,17 +65,93 @@ abstract class Column
     }
 
     /**
+     * Sets in ColumnBuilder.
+     *
+     * @param ColumnBuilder $columnBuilder
+     */
+    public function setColumnBuilder(ColumnBuilder $columnBuilder)
+    {
+        $this->columnBuilder = $columnBuilder;
+    }
+
+    /**
+     * @return array
+     */
+    public function buildColumnArray()
+    {
+        $filterOptions = $this->getToFilteredOutputOptionKeys();
+
+        $filteredOptions = array_filter(
+            $this->options,
+            function ($key) use ($filterOptions) {
+                return !in_array($key, $filterOptions);
+            },
+            ARRAY_FILTER_USE_KEY
+        );
+
+        //if no width is set, remove field
+        if (is_null($filteredOptions['width'])) {
+            unset($filteredOptions['width']);
+        }
+
+        if (!is_null($filteredOptions['filter'])) {
+            /** @var AbstractFilter $filter */
+            $filter = FilterFactory::create($filteredOptions['filter']);
+
+            $filteredOptions['filter'] = array(
+                'type' => $filter::TYPE,
+                'options' => $filter->buildArray()
+            );
+        }
+
+        return $filteredOptions;
+    }
+
+    protected function getToFilteredOutputOptionKeys() : array
+    {
+        return array(
+            'emptyData',
+            'propertyPath',
+            'isJoinField',
+            'sortQuery',
+            'dataCallback'
+        );
+    }
+
+    /**
+     * @param $entity
+     * @return array
+     */
+    public abstract function buildData($entity);
+
+    /**
      * @param string $key
      * @return mixed
      * @throws \Exception
      */
-    public function getOption(string $key)
+    public function getOption($key)
     {
         if (!isset($this->options[$key])){
             throw new \Exception("Option not found");
         }
 
         return $this->options[$key];
+    }
+
+    /**
+     * Replaces option.
+     *
+     * @param string $key
+     * @param mixed $value
+     */
+    public function replaceOption($key, $value)
+    {
+        $options = $this->options;
+        $options[$key] = $value;
+
+        $resolver = new OptionsResolver();
+        $this->configureOptions($resolver);
+        $this->options = $resolver->resolve($options);
     }
 
     public function getOptions()
@@ -113,28 +166,28 @@ abstract class Column
 
     public function getPropertyPath()
     {
-        if ($this->options['_isJoinField']) {
-            $parts = explode(".", $this->options['_propertyPath']);
+        if ($this->options['isJoinField']) {
+            $parts = explode(".", $this->options['propertyPath']);
             $c = count($parts);
             return $parts[$c - 2] . '.' . $parts[$c - 1];
         }
 
-        return $this->options['_propertyPath'];
+        return $this->options['propertyPath'];
     }
 
     public function getFullPropertyPath()
     {
-        return $this->options['_propertyPath'];
+        return $this->options['propertyPath'];
     }
 
     public function getEmptyData()
     {
-        return $this->options['_emptyData'];
+        return $this->options['emptyData'];
     }
 
     public function getSortQueryCallback()
     {
-        return $this->options['_sortQuery'];
+        return $this->options['sortQuery'];
     }
 
     public function getFilter()
@@ -144,7 +197,7 @@ abstract class Column
 
     public function isJoinField()
     {
-        return $this->options['_isJoinField'];
+        return $this->options['isJoinField'];
     }
 
     public function configureOptions(OptionsResolver $resolver)
@@ -158,15 +211,17 @@ abstract class Column
             'sortable' => true,
             'show' => true,
             'filter' => array(TextFilter::class, array()),
-            '_emptyData' => '',
-            '_propertyPath' => '',
-            '_isJoinField' => false,
-            '_sortQuery' => null,
-            '_dataCallback' => null
+
+            //internals fields
+            'emptyData' => '',
+            'propertyPath' => '',
+            'isJoinField' => false,
+            'sortQuery' => null,
+            'dataCallback' => null
         ));
 
         $resolver->setRequired('accessor');
-        $resolver->setRequired('_propertyPath');
+        $resolver->setRequired('propertyPath');
         $resolver->setRequired('type');
 
         $resolver->setAllowedTypes('Header', 'string');
@@ -177,11 +232,11 @@ abstract class Column
         $resolver->setAllowedTypes('sortable', ['boolean']);
         $resolver->setAllowedTypes('show', ['boolean']);
         $resolver->setAllowedTypes('filter', ['array', 'null']);
-        $resolver->setAllowedTypes('_emptyData', ['string']);
-        $resolver->setAllowedTypes('_propertyPath', ['string']);
-        $resolver->setAllowedTypes('_isJoinField', ['boolean']);
-        $resolver->setAllowedTypes('_sortQuery', ['Closure', 'null']);
-        $resolver->setAllowedTypes('_dataCallback', ['Closure', 'null']);
+        $resolver->setAllowedTypes('emptyData', ['string']);
+        $resolver->setAllowedTypes('propertyPath', ['string']);
+        $resolver->setAllowedTypes('isJoinField', ['boolean']);
+        $resolver->setAllowedTypes('sortQuery', ['Closure', 'null']);
+        $resolver->setAllowedTypes('dataCallback', ['Closure', 'null']);
     }
 
 }

@@ -3,7 +3,6 @@
 
 namespace HelloSebastian\ReactTableBundle\Columns;
 
-
 class TextColumn extends Column
 {
     public function __construct($accessor, $options)
@@ -13,8 +12,8 @@ class TextColumn extends Column
 
     public function buildData($entity)
     {
-        if (!is_null($this->options['_dataCallback'])) {
-            return $this->getOptions()['_dataCallback']($entity);
+        if (!is_null($this->options['dataCallback'])) {
+            return $this->options['dataCallback']($entity);
         }
 
         if (!$this->propertyAccessor->isReadable($entity, $this->getFullPropertyPath())) {
