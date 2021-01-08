@@ -3,51 +3,64 @@
 namespace HelloSebastian\ReactTableBundle\Data;
 
 
+use HelloSebastian\ReactTableBundle\Columns\Column;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 
 class ActionButton
 {
+    /**
+     * @var array
+     */
     private $options;
 
-    public function __construct($options)
+    /**
+     * @var Column
+     */
+    private $column;
+
+    public function __construct($column, $options)
     {
+        $this->column = $column;
+
         $resolver = new OptionsResolver();
         $this->configureOptions($resolver);
 
         $this->options = $resolver->resolve($options);
     }
 
-    public static function create($routeName, $name, $options = array())
-    {
-        $options['routeName'] = $routeName;
-        $options['name'] = $name;
-
-        return new self($options);
-    }
-
     public function configureOptions(OptionsResolver $resolver)
     {
         $resolver->setDefaults(array(
-            'name' => null,
+            'displayName' => null,
             'classNames' => '',
+            'additionalClassNames' => '',
             'routeName' => null,
             'routeParams' => array('id')
         ));
 
-        $resolver->setRequired('name');
+        $resolver->setRequired('displayName');
         $resolver->setRequired('routeName');
 
-        $resolver->setAllowedTypes('name', 'string');
+        $resolver->setAllowedTypes('displayName', 'string');
         $resolver->setAllowedTypes('routeName', 'string');
         $resolver->setAllowedTypes('classNames', 'string');
+        $resolver->setAllowedTypes('additionalClassNames', 'string');
         $resolver->setAllowedTypes('routeParams', 'array');
     }
 
     public function buildArray()
     {
+        $defaultClassNames = $this->column->getColumnBuilder()->getDefaultColumnOptions()['action_column']['default_class_names'];
+
+        if (!empty($this->options['classNames'])) {
+            $classNames = $this->options['classNames'] . ' ' . $this->options['additionalClassNames'];
+        } else {
+            $classNames = $defaultClassNames . ' ' . $this->options['additionalClassNames'];
+        }
+
         return array(
-            'name' => $this->options['name'],
-            'classNames' => $this->options['classNames']
+            'name' => $this->options['displayName'],
+            'classNames' => $classNames
         );
     }
 

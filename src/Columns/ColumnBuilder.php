@@ -122,4 +122,9 @@ class ColumnBuilder
         return $this->columns;
     }
 
+    public function getDefaultColumnOptions()
+    {
+        return $this->defaultColumnOptions;
+    }
+
 }

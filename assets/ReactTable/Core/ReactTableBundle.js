@@ -102,7 +102,7 @@ export default class ReactTableBundle extends Component {
                 persistedState[key] = state;
                 cookies.set("table_" + tableName, JSON.stringify(persistedState), {path: '/'});
 
-            }, 800);
+            }, 500);
         }
 
         this.setState({
@@ -141,25 +141,27 @@ export default class ReactTableBundle extends Component {
         }
 
         return (
-            <ReactTable
-                {...this.props.tableProps}
-                data={this.state.data}
-                columns={this.state.columns}
-                pages={this.state.pages}
-                loading={this.state.loading}
-                manual
-                sorted={this.state.sorted}
-                resized={this.state.resized}
-                filtered={this.state.filtered}
-                page={this.state.page}
-                pageSize={this.state.page_size}
-                onFetchData={this.onFetchData}
-                onResizedChange={(state) => this.saveStateToCookie(state, "resized")}
-                onSortedChange={(state) => this.saveStateToCookie(state, "sorted")}
-                onFilteredChange={(state) => this.saveStateToCookie(state, "filtered")}
-                onPageChange={(state) => this.saveStateToCookie(state, "page")}
-                onPageSizeChange={(state) => this.saveStateToCookie(state, "page_size")}
-            />
+            <div>
+                <ReactTable
+                    {...this.props.tableProps}
+                    data={this.state.data}
+                    columns={this.state.columns}
+                    pages={this.state.pages}
+                    loading={this.state.loading}
+                    manual
+                    sorted={this.state.sorted}
+                    resized={this.state.resized}
+                    filtered={this.state.filtered}
+                    page={this.state.page}
+                    pageSize={this.state.page_size}
+                    onFetchData={this.onFetchData}
+                    onResizedChange={(state) => this.saveStateToCookie(state, "resized")}
+                    onSortedChange={(state) => this.saveStateToCookie(state, "sorted")}
+                    onFilteredChange={(state) => this.saveStateToCookie(state, "filtered")}
+                    onPageChange={(state) => this.saveStateToCookie(state, "page")}
+                    onPageSizeChange={(state) => this.saveStateToCookie(state, "page_size")}
+                />
+            </div>
         );
     }
 }

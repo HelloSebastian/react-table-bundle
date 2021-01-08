@@ -12,7 +12,17 @@ class ActionColumn extends Column
 
     public function __construct($accessor, $options)
     {
+        $options['buttons'] = $this->buildButtons($options['buttons']);
         parent::__construct($accessor ?? "actions", "action", $options);
+    }
+
+    private function buildButtons($buttons)
+    {
+        foreach ($buttons as $key => $button) {
+            $buttons[$key] = new ActionButton($this, $button);
+        }
+
+        return $buttons;
     }
 
     public function configureOptions(OptionsResolver $resolver)

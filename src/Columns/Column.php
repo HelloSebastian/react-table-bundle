@@ -20,11 +20,6 @@ abstract class Column
     protected $options;
 
     /**
-     * @var array
-     */
-    protected $outputOptions;
-
-    /**
      * @var RouterInterface
      */
     protected $router;
@@ -198,6 +193,11 @@ abstract class Column
     public function isJoinField()
     {
         return $this->options['isJoinField'];
+    }
+
+    public function getColumnBuilder()
+    {
+        return $this->columnBuilder;
     }
 
     public function configureOptions(OptionsResolver $resolver)
