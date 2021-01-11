@@ -112,7 +112,7 @@ class UserTable extends ReactTable
     /**
      * @inheritDoc
      */
-    protected function buildColumns(ColumnBuilder $columnBuilder)
+    protected function buildColumns(ColumnBuilder $builder)
     {
         $columnBuilder
             ->add('username', TextColumn::class, array(
@@ -134,7 +134,7 @@ class UserTable extends ReactTable
             ))
             ->add('department.name', TextColumn::class, array(
                 'Header' => 'Department',
-                '_emptyData' => 'No Department',
+                'emptyData' => 'No Department',
                 'filter' => array(SelectFilter::class, array(
                     'choices' => array(
                         'IT' => 'IT',
@@ -144,7 +144,7 @@ class UserTable extends ReactTable
             ))
             ->add('department.costCentre.name', TextColumn::class, array(
                 'Header' => 'Cost Centre',
-                '_emptyData' => 'No Cost Centre',
+                'emptyData' => 'No Cost Centre',
                 'filter' => array(SelectFilter::class, array(
                     'choices' => array(
                         '001' => '001',
@@ -369,6 +369,32 @@ public function index(Request $request, ReactTableFactory $reactTableFactory) : 
     ...
 }
 ```
+
+## Columns
+
+#### Default Options
+
+| Option         | Type            | Default                       | 
+|----------------|-----------------|-------------------------------|
+| Header         | string          | ""                            |
+| accessor       | string          | ""                            |
+| width          | integer / null  | null                          | 
+| filterable     | bool            | true                          |
+| sortable       | bool            | true                          |
+| show           | bool            | true                          |
+| filter         | array / null    | [TextFilter::class, array()]  |
+| emptyData      | string          | ""                            |
+| sortQuery      | Closure / null  | null                          |
+| dataCallback   | Closure / null  | null                          |
+
+
+### TextColumn
+
+Represents column width text.
+
+#### Options
+
+
 
 ## ToDo's
 * Documentation

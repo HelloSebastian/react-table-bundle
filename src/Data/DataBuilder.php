@@ -32,6 +32,12 @@ class DataBuilder
 
             /** @var Column $column */
             foreach ($this->columnBuilder->getColumns() as $column) {
+
+                if (!is_null($column->getDataCallback())) {
+                    $row[$column->getAccessor()] = $column->getDataCallback()($entity);
+                    continue;
+                }
+
                 $row[$column->getAccessor()] = $column->buildData($entity);
             }
 

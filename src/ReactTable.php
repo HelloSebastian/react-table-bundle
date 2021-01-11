@@ -7,6 +7,7 @@ use HelloSebastian\ReactTableBundle\Columns\ColumnBuilder;
 use HelloSebastian\ReactTableBundle\Data\DataBuilder;
 use HelloSebastian\ReactTableBundle\Query\DoctrineQueryBuilder;
 use Doctrine\ORM\EntityManagerInterface;
+use HelloSebastian\ReactTableBundle\Response\ReactTableResponse;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\OptionsResolver\OptionsResolver;
@@ -25,11 +26,6 @@ abstract class ReactTable
     private $columnBuilder;
 
     /**
-     * @var DataBuilder
-     */
-    private $dataBuilder;
-
-    /**
      * @var DoctrineQueryBuilder
      */
     private $doctrineQueryBuilder;
@@ -38,6 +34,11 @@ abstract class ReactTable
      * @var EntityManagerInterface
      */
     private $em;
+
+    /**
+     * @var ReactTableResponse
+     */
+    private $reactTableResponse;
 
     /**
      * @var array
@@ -49,11 +50,6 @@ abstract class ReactTable
      */
     protected $persistenceOptions;
 
-    /**
-     * @var array
-     */
-    protected $requestData;
-
 
     public function __construct(RouterInterface $router, EntityManagerInterface $em, $defaultTableProps, $defaultPersistenceOptions, $defaultColumnOptions)
     {
@@ -63,21 +59,32 @@ abstract class ReactTable
         $this->persistenceOptions = $defaultPersistenceOptions;
 
         $this->columnBuilder = new ColumnBuilder($router, $defaultColumnOptions);
-        $this->dataBuilder = new DataBuilder($this->columnBuilder);
         $this->doctrineQueryBuilder = new DoctrineQueryBuilder($this->em, $this->getEntityClass(), $this->columnBuilder);
+
+        $dataBuilder = new DataBuilder($this->columnBuilder);
+        $this->reactTableResponse = new ReactTableResponse($this->doctrineQueryBuilder, $dataBuilder);
 
         $this->buildColumns($this->columnBuilder);
     }
 
+    protected abstract function buildColumns(ColumnBuilder $builder);
+
+    protected abstract function getEntityClass(): string;
+
     /**
-     * Checks if request is a sub request (callback) from react table.
-     *
+     * @param string $callbackUrl
+     */
+    public function setCallbackUrl($callbackUrl)
+    {
+        $this->reactTableResponse->setCallbackUrl($callbackUrl);
+    }
+
+    /**
      * @return boolean
-     * @throws \Exception
      */
     public function isCallback()
     {
-        return $this->requestData['isCallback'];
+        return $this->reactTableResponse->isCallback();
     }
 
     /**
@@ -87,23 +94,7 @@ abstract class ReactTable
      */
     public function handleRequest(Request $request)
     {
-        $requestDataResolver = new OptionsResolver();
-        $requestDataResolver->setDefaults(array(
-            'isCallback' => false,
-            'filtered' => array(),
-            'sorted' => array(),
-            'page' => 1,
-            'pageSize' => 25,
-            'route' => null
-        ));
-
-        $requestData = array();
-        if ($request->isMethod("POST")) {
-            $requestData = json_decode($request->getContent(), true);
-        }
-
-        $requestData['route'] = $request->getRequestUri();
-        $this->requestData = $requestDataResolver->resolve($requestData);
+        $this->reactTableResponse->handleRequest($request);
     }
 
     /**
@@ -113,7 +104,7 @@ abstract class ReactTable
      */
     public function getResponse()
     {
-        return new JsonResponse($this->buildTable());
+        return new JsonResponse($this->reactTableResponse->getData());
     }
 
     /**
@@ -132,7 +123,7 @@ abstract class ReactTable
         $this->configurePersistenceOptions($persistenceOptionsResolver);
 
         return json_encode(array(
-            'url' => $this->requestData['route'], //url for callbacks
+            'url' => $this->reactTableResponse->getCallbackUrl(),
             'columns' => $this->columnBuilder->buildColumnsArray(),
             'tableName' => $this->getTableName(),
             'tableProps' => $tablePropsResolver->resolve($this->tableProps),
@@ -140,14 +131,33 @@ abstract class ReactTable
         ));
     }
 
-    private function buildTable()
+    public function getColumnBuilder()
     {
-        $entities = $this->doctrineQueryBuilder->getSubsetData($this->requestData);
+        return $this->columnBuilder;
+    }
 
-        return array(
-            'data' => $this->dataBuilder->buildDataAsArray($entities),
-            'totalCount' => $this->doctrineQueryBuilder->getTotalCount()
-        );
+    public function getQueryBuilder()
+    {
+        return $this->doctrineQueryBuilder->getQueryBuilder();
+    }
+
+    public function setTableProps($tableProps)
+    {
+        $this->tableProps = array_merge($this->tableProps, $tableProps);
+    }
+
+    public function setPersistenceOptions($persistenceOptions)
+    {
+        $this->persistenceOptions = array_merge($this->persistenceOptions, $persistenceOptions);
+    }
+
+    private function getTableName()
+    {
+        $className = get_class($this);
+        $className = strtolower($className);
+        $className = str_replace("\\", "_", $className);
+
+        return $className;
     }
 
     public function configureTableProps(OptionsResolver $resolver)
@@ -198,37 +208,4 @@ abstract class ReactTable
         $resolver->setAllowedTypes('page', 'boolean');
         $resolver->setAllowedTypes('page_size', 'boolean');
     }
-
-    public function getColumnBuilder()
-    {
-        return $this->columnBuilder;
-    }
-
-    public function getQueryBuilder()
-    {
-        return $this->doctrineQueryBuilder->getQueryBuilder();
-    }
-
-    public function setTableProps($tableProps)
-    {
-        $this->tableProps = array_merge($this->tableProps, $tableProps);
-    }
-
-    public function setPersistenceOptions($persistenceOptions)
-    {
-        $this->persistenceOptions = array_merge($this->persistenceOptions, $persistenceOptions);
-    }
-
-    public function getTableName()
-    {
-        $className = get_class($this);
-        $className = strtolower($className);
-        $className = str_replace("\\", "_", $className);
-
-        return $className;
-    }
-
-    protected abstract function buildColumns(ColumnBuilder $columnBuilder);
-
-    protected abstract function getEntityClass(): string;
 }

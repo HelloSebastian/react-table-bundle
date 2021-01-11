@@ -12,17 +12,18 @@ class ActionColumn extends Column
 
     public function __construct($accessor, $options)
     {
-        $options['buttons'] = $this->buildButtons($options['buttons']);
         parent::__construct($accessor ?? "actions", "action", $options);
     }
 
     private function buildButtons($buttons)
     {
         foreach ($buttons as $key => $button) {
-            $buttons[$key] = new ActionButton($this, $button);
+            if (is_array($button)) {
+                $buttons[$key] = new ActionButton($this, $button);
+            }
         }
 
-        return $buttons;
+        $this->options['buttons'] = $buttons;
     }
 
     public function configureOptions(OptionsResolver $resolver)
@@ -42,6 +43,7 @@ class ActionColumn extends Column
 
     public function buildColumnArray()
     {
+        $this->buildButtons($this->options['buttons']);
         $options = parent::buildColumnArray();
 
         $buttons = array();
@@ -57,6 +59,7 @@ class ActionColumn extends Column
 
     public function buildData($entity)
     {
+        $this->buildButtons($this->options['buttons']);
         $item = array();
 
         /**
@@ -64,7 +67,6 @@ class ActionColumn extends Column
          * @var ActionButton $button
          */
         foreach ($this->options['buttons'] as $key => $button) {
-
             $routeParams = array();
             foreach ($button->getRouteParams() as $param) {
                 $routeParams[$param] = $this->propertyAccessor->getValue($entity, $param);

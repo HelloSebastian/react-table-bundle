@@ -185,6 +185,11 @@ abstract class Column
         return $this->options['sortQuery'];
     }
 
+    public function getDataCallback()
+    {
+        return $this->options['dataCallback'];
+    }
+
     public function getFilter()
     {
         return $this->options['filter'];
