@@ -19,9 +19,8 @@ class BooleanColumn extends Column
         parent::configureOptions($resolver);
 
         $resolver->setDefaults(array(
-            'trueValue' => 'True',
-            'falseValue' => 'False',
-            'nullValue' => 'Null',
+            'trueLabel' => 'True',
+            'falseLabel' => 'False',
             'filter' => array(SelectFilter::class, array(
                 'choices' => array(
                     true => 'True',
@@ -31,9 +30,8 @@ class BooleanColumn extends Column
             )),
         ));
 
-        $resolver->setAllowedTypes('trueValue', 'string');
-        $resolver->setAllowedTypes('falseValue', 'string');
-        $resolver->setAllowedTypes('nullValue', 'string');
+        $resolver->setAllowedTypes('trueLabel', 'string');
+        $resolver->setAllowedTypes('falseLabel', 'string');
     }
 
     public function buildData($entity)
@@ -45,13 +43,13 @@ class BooleanColumn extends Column
         $booleanValue = $this->propertyAccessor->getValue($entity, $this->getFullPropertyPath());
 
         if (is_null($booleanValue)) {
-            return $this->options['nullValue'];
+            return $this->getEmptyData();
         }
 
         if (!is_bool($booleanValue)) {
             throw new \Exception("Value should be boolean. Type: " . gettype($booleanValue));
         }
 
-        return $this->options[$booleanValue ? 'trueValue' : 'falseValue'];
+        return $this->options[$booleanValue ? 'trueLabel' : 'falseLabel'];
     }
 }

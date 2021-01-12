@@ -136,7 +136,7 @@ class DoctrineQueryBuilder
             $column = $this->columnBuilder->getColumnByAccessor($sort['id']);
 
             if ($callback = $column->getSortQueryCallback()) {
-                $callback($this->qb, $sort['id'], $sort['desc'] ? 'DESC' : 'ASC');
+                $callback($this->qb, $sort['desc'] ? 'DESC' : 'ASC');
             } else if ($column->isJoinField()) {
                 $this->addSortingQuery($this->qb, $column->getPropertyPath(), $sort['desc'] ? 'DESC' : 'ASC');
             } else {

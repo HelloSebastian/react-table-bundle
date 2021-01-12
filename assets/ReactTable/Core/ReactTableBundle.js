@@ -32,6 +32,40 @@ export default class ReactTableBundle extends Component {
         console.log("Default Table", this.props);
     }
 
+    componentDidMount() {
+        const columns = this.props.columns;
+
+        const event = new CustomEvent("rtb:componentDidMount", {
+            bubbles: true,
+            detail: {
+                columns: columns,
+                tableProps: this.props.tableProps,
+                persistenceOptions: this.props.persistenceOptions
+            }
+        });
+
+        document.dispatchEvent(event);
+
+        this.setState({
+            columns: this.buildColumns(columns),
+            init: true,
+            ...this.getPersistenceFromCookies()
+        });
+    }
+
+    buildColumns(columns) {
+        return columns.map(col => {
+            switch (col.type) {
+                case "text":
+                    return buildTextColumn(col);
+                case "action":
+                    return buildActionColumn(col);
+                default:
+                    return buildTextColumn(col);
+            }
+        });
+    }
+
     getPersistenceFromCookies() {
         const {persistenceOptions, tableName} = this.props;
 
@@ -68,27 +102,6 @@ export default class ReactTableBundle extends Component {
         }
 
         return persistedState;
-    }
-
-    componentDidMount() {
-        this.setState({
-            columns: this.buildColumns(this.props.columns),
-            init: true,
-            ...this.getPersistenceFromCookies()
-        });
-    }
-
-    buildColumns(columns) {
-        return columns.map(col => {
-            switch (col.type) {
-                case "text":
-                    return buildTextColumn(col);
-                case "action":
-                    return buildActionColumn(col);
-                default:
-                    return buildTextColumn(col);
-            }
-        });
     }
 
     saveStateToCookie(state, key) {

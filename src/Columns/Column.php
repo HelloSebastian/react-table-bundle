@@ -209,13 +209,18 @@ abstract class Column
     {
         $resolver->setDefaults(array(
             'Header' => '',
+            'id' => null,
             'accessor' => '',
             'type' => null,
             'width' => null,
             'filterable' => true,
             'sortable' => true,
+            'resizable' => true,
             'show' => true,
             'filter' => array(TextFilter::class, array()),
+            'className' => '',
+            'headerClassName' => '',
+            'footerClassName' => '',
 
             //internals fields
             'emptyData' => '',
