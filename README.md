@@ -260,14 +260,14 @@ Represents column with text.
   
     //optional overrides ...
   	'dataCallback' => function (User $user) { //entity class from getEntityClass
-      //you can return what ever you want ... but only string or number  
-      return $user->getId() . " " . $user->getUsername();
+        //you can return what ever you want ... but only string or number  
+        return $user->getId() . " " . $user->getUsername();
     },
   	'sortQuery' => function (QueryBuilder $qb, $direction) {
         $qb->addOrderBy('username', $direction);
     },
   	'filter' => array(TextFilter::class, array(
-    		'placeholder' => 'Search ...',
+    	'placeholder' => 'Search ...',
       	'filterQuery' => function (QueryBuilder $qb, $field, $value) {
             //add custom expressions to QueryBuilder ...
           	//field = "username"
@@ -353,7 +353,7 @@ All Options of TextColumn.
 ->add("custom", OwnColumn::class, array(
     'Header' => 'My Column',
     'dataCallback' => function (User $user) {
-    		return "Hello";
+        return "Hello";
     },
     'sortQuery' => function (QueryBuilder $qb, $direction) {
       	
@@ -445,8 +445,8 @@ All Options of TextColumn
 # config/packages/react_table.yaml
 
 react_table:
-		# other configuration ...
-		default_column_options:
+	# other configuration ...
+	default_column_options:
         action_column:
             default_class_names: 'btn btn-xs'
 ```
